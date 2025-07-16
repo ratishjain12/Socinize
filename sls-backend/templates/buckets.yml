@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+    MediaUploadsBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: !Sub 'socinize-media-uploads'
+            PublicAccessBlockConfiguration:
+                BlockPublicAcls: true
+                BlockPublicPolicy: true
+                IgnorePublicAcls: true
+                RestrictPublicBuckets: true
+            BucketEncryption:
+                ServerSideEncryptionConfiguration:
+                    - ServerSideEncryptionByDefault:
+                          SSEAlgorithm: AES256
+
+Outputs:
+    MediaUploadsBucketName:
+        Description: 'S3 bucket for user media uploads'
+        Value: !Ref MediaUploadsBucket
+        Export:
+            Name: MediaUploadsBucketName
