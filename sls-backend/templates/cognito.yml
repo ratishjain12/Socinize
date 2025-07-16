@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+    SocinizeUserPool:
+        Type: AWS::Cognito::UserPool
+        Properties:
+            UserPoolName: socinize-user-pool
+            AutoVerifiedAttributes:
+                - email
+            UsernameAttributes:
+                - email
+            Policies:
+                PasswordPolicy:
+                    MinimumLength: 8
+                    RequireUppercase: true
+                    RequireLowercase: true
+                    RequireNumbers: true
+                    RequireSymbols: false
+            AccountRecoverySetting:
+                RecoveryMechanisms:
+                    - Name: verified_email
+                      Priority: 1
+
+    SocinizeUserPoolClient:
+        Type: AWS::Cognito::UserPoolClient
+        Properties:
+            ClientName: socinize-user-pool-client
+            UserPoolId: !Ref SocinizeUserPool
+            GenerateSecret: false
+            ExplicitAuthFlows:
+                - ALLOW_USER_PASSWORD_AUTH
+                - ALLOW_REFRESH_TOKEN_AUTH
+                - ALLOW_USER_SRP_AUTH
+                - ALLOW_USER_EMAIL_AUTH
+                - ALLOW_CUSTOM_AUTH
+            PreventUserExistenceErrors: ENABLED
+            SupportedIdentityProviders:
+                - COGNITO
+            AccessTokenValidity: 1
+            IdTokenValidity: 1
+            TokenValidityUnits:
+                AccessToken: hours
+                IdToken: hours
+
+Outputs:
+    CognitoUserPoolId:
+        Description: 'Cognito User Pool ID'
+        Value: !Ref SocinizeUserPool
+        Export:
+            Name: CognitoUserPoolId
+
+    CognitoUserPoolClientId:
+        Description: 'Cognito User Pool Client ID'
+        Value: !Ref SocinizeUserPoolClient
+        Export:
+            Name: CognitoUserPoolClientId
