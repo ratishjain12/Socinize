@@ -22,8 +22,3 @@ Resources:
         Type: AWS::CloudFormation::Stack
         Properties:
             TemplateURL: templates/lambdas.yaml
-
-    ApiGatewayStack:
-        Type: AWS::CloudFormation::Stack
-        Properties:
-            TemplateURL: templates/apigateway.yaml
