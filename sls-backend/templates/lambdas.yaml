@@ -13,6 +13,41 @@ Resources:
                 AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
                 AllowOrigin: "'*'"
 
+    LambdaExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: SocinizeLambdaExecutionRole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service: lambda.amazonaws.com
+                      Action: sts:AssumeRole
+            Policies:
+                - PolicyName: LambdaDynamoDBS3Access
+                  PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - dynamodb:*
+                            Resource:
+                                - !ImportValue UsersTableName
+                                - !ImportValue PostsTableName
+                                - !ImportValue SocialAccountsTableName
+                          - Effect: Allow
+                            Action:
+                                - s3:*
+                            Resource:
+                                - !ImportValue MediaUploadsBucketName
+                          - Effect: Allow
+                            Action:
+                                - logs:CreateLogGroup
+                                - logs:CreateLogStream
+                                - logs:PutLogEvents
+                            Resource: 'arn:aws:logs:*:*:*'
+
     HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
@@ -25,6 +60,7 @@ Resources:
             Description: 'A simple Hello World Lambda'
             MemorySize: 128
             Timeout: 10
+            Role: !GetAtt LambdaExecutionRole.Arn
             Events:
                 ApiHelloWorld:
                     Type: Api
