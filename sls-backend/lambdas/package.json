@@ -1,0 +1,12 @@
+{
+  "name": "socinize-lambdas",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.119",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}
