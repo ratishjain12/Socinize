@@ -1,8 +1,16 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser, signOut } from "aws-amplify/auth";
+import React, { createContext, useEffect, useState } from "react";
+import { getCurrentUser, signOut, fetchUserAttributes } from "aws-amplify/auth";
+
+interface User {
+  username: string;
+  email?: string;
+  userId: string;
+  signInDetails?: unknown;
+  attributes?: Record<string, unknown>;
+}
 
 interface AuthContextType {
-  user: any;
+  user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   signOut: () => Promise<void>;
@@ -11,20 +19,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
-
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -45,8 +45,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const currentUser = await getCurrentUser();
 
       if (currentUser) {
+        const userAttributes = await fetchUserAttributes();
         setUser({
-          username: currentUser.username,
+          username: userAttributes.name ?? "",
           userId: currentUser.userId,
           signInDetails: currentUser.signInDetails,
         });
@@ -85,3 +86,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export { AuthContext };

@@ -1,7 +1,7 @@
 import React from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 interface AuthMiddlewareProps {
   children: React.ReactNode;
