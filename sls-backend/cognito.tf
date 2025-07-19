@@ -13,6 +13,10 @@ resource "aws_cognito_user_pool" "this" {
     default_email_option = "CONFIRM_WITH_CODE"
   }
 
+  lambda_config {
+    post_confirmation = aws_lambda_function.post_confirmation.arn
+  }
+
   account_recovery_setting {
     recovery_mechanism {
       name     = "verified_email"

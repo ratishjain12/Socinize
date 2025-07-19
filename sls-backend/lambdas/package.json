@@ -4,9 +4,14 @@
   "main": "index.js",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.119",
+    "@types/node": "^24.0.15",
     "typescript": "^5.0.0"
   },
   "scripts": {
     "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.848.0",
+    "@aws-sdk/lib-dynamodb": "^3.848.0"
   }
 }
