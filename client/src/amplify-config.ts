@@ -11,6 +11,9 @@ Amplify.configure({
       },
       signUpVerificationMethod: "code",
       userAttributes: {
+        name: {
+          required: true,
+        },
         email: {
           required: true,
         },

@@ -1,0 +1,33 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-socinize-dev-a73e7-authRole",
+      "UnauthRoleArn": "arn:aws:iam::242201266100:role/amplify-socinize-dev-a73e7-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::242201266100:role/amplify-socinize-dev-a73e7-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-socinize-dev-a73e7-deployment",
+      "UnauthRoleName": "amplify-socinize-dev-a73e7-unauthRole",
+      "StackName": "amplify-socinize-dev-a73e7",
+      "StackId": "arn:aws:cloudformation:ap-south-1:242201266100:stack/amplify-socinize-dev-a73e7/b0cc3d30-647d-11f0-bdd7-066fd7f447a1",
+      "AmplifyAppId": "d358sivu6leksc"
+    }
+  },
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-socinize-prod-0894e-authRole",
+      "UnauthRoleArn": "arn:aws:iam::961550123520:role/amplify-socinize-prod-0894e-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::961550123520:role/amplify-socinize-prod-0894e-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-socinize-prod-0894e-deployment",
+      "UnauthRoleName": "amplify-socinize-prod-0894e-unauthRole",
+      "StackName": "amplify-socinize-prod-0894e",
+      "StackId": "arn:aws:cloudformation:ap-south-1:961550123520:stack/amplify-socinize-prod-0894e/7d079b00-647f-11f0-8657-0237420bea5b",
+      "AmplifyAppId": "d2t5gzo9ooeqfj"
+    },
+    "categories": {
+      "auth": {
+        "socinize4d496b4d": {}
+      }
+    }
+  }
+}
