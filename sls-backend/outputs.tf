@@ -10,9 +10,15 @@ output "social_accounts_table_name" {
 output "media_uploads_bucket" {
   value = aws_s3_bucket.media_uploads.bucket
 }
-output "lambda_function_arn" {
-  value = aws_lambda_function.hello_world.arn
+
+output "create_draft_lambda_arn" {
+  value = aws_lambda_function.create_draft.arn
 }
+
+output "generate_presigned_url_lambda_arn" {
+  value = aws_lambda_function.generate_presigned_url.arn
+}
+
 output "api_endpoint" {
   value = aws_apigatewayv2_api.api.api_endpoint
 }
