@@ -61,6 +61,12 @@ data "archive_file" "post_confirmation_zip" {
   output_path = "${path.module}/lambdas/build/post-confirmation/post-confirmation.zip"
 }
 
+data "archive_file" "social_connect_zip" {
+  type        = "zip"
+  source_file  = "${path.module}/lambdas/build/social-connect/index.js"
+  output_path = "${path.module}/lambdas/build/social-connect/social-connect.zip"
+}
+
 resource "aws_lambda_function" "hello_world" {
   function_name    = "HelloWorldFunction"
   role             = aws_iam_role.lambda_exec.arn
@@ -92,6 +98,24 @@ resource "aws_lambda_function" "post_confirmation" {
   environment {
     variables = {
       USERS_TABLE = aws_dynamodb_table.users.name
+    }
+  }
+}
+
+resource "aws_lambda_function" "social_connect" {
+  function_name    = "SocialConnectFunction"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.social_connect_zip.output_path
+  source_code_hash = data.archive_file.social_connect_zip.output_base64sha256
+  timeout          = 30
+  memory_size      = 256
+  environment {
+    variables = {
+      SOCIAL_ACCOUNTS_TABLE = aws_dynamodb_table.social_accounts.name
+      TWITTER_CLIENT_ID     = var.twitter_client_id
+      TWITTER_CLIENT_SECRET = var.twitter_client_secret
     }
   }
 }
