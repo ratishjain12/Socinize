@@ -49,12 +49,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
   policy = data.aws_iam_policy_document.lambda_policy.json
 }
 
-data "archive_file" "hello_world_zip" {
-  type        = "zip"
-  source_file  = "${path.module}/lambdas/build/hello-world/index.js"
-  output_path = "${path.module}/lambdas/build/hello-world/hello-world.zip"
-}
-
 data "archive_file" "post_confirmation_zip" {
   type        = "zip"
   source_file  = "${path.module}/lambdas/build/post-confirmation/index.js"
@@ -67,23 +61,16 @@ data "archive_file" "social_connect_zip" {
   output_path = "${path.module}/lambdas/build/social-connect/social-connect.zip"
 }
 
-resource "aws_lambda_function" "hello_world" {
-  function_name    = "HelloWorldFunction"
-  role             = aws_iam_role.lambda_exec.arn
-  handler          = "index.handler"
-  runtime          = "nodejs20.x"
-  filename         = data.archive_file.hello_world_zip.output_path
-  source_code_hash = data.archive_file.hello_world_zip.output_base64sha256
-  timeout          = 10
-  memory_size      = 128
-  environment {
-    variables = {
-      USERS_TABLE              = aws_dynamodb_table.users.name
-      POSTS_TABLE              = aws_dynamodb_table.posts.name
-      SOCIAL_ACCOUNTS_TABLE    = aws_dynamodb_table.social_accounts.name
-      MEDIA_UPLOADS_BUCKET     = aws_s3_bucket.media_uploads.bucket
-    }
-  }
+data "archive_file" "create_draft_zip" {
+  type        = "zip"
+  source_file = "${path.module}/lambdas/build/create-draft/index.js"
+  output_path = "${path.module}/lambdas/build/create-draft/create-draft.zip"
+}
+
+data "archive_file" "generate_presigned_url_zip" {
+  type        = "zip"
+  source_file = "${path.module}/lambdas/build/generate-presigned-url/index.js"
+  output_path = "${path.module}/lambdas/build/generate-presigned-url/generate-presigned-url.zip"
 }
 
 resource "aws_lambda_function" "post_confirmation" {
@@ -116,6 +103,38 @@ resource "aws_lambda_function" "social_connect" {
       SOCIAL_ACCOUNTS_TABLE = aws_dynamodb_table.social_accounts.name
       TWITTER_CLIENT_ID     = var.twitter_client_id
       TWITTER_CLIENT_SECRET = var.twitter_client_secret
+    }
+  }
+}
+
+resource "aws_lambda_function" "create_draft" {
+  function_name    = "CreateDraftFunction"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.create_draft_zip.output_path
+  source_code_hash = data.archive_file.create_draft_zip.output_base64sha256
+  timeout          = 10
+  memory_size      = 128
+  environment {
+    variables = {
+      POSTS_TABLE = aws_dynamodb_table.posts.name
+    }
+  }
+}
+
+resource "aws_lambda_function" "generate_presigned_url" {
+  function_name    = "GeneratePresignedUrlFunction"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  filename         = data.archive_file.generate_presigned_url_zip.output_path
+  source_code_hash = data.archive_file.generate_presigned_url_zip.output_base64sha256
+  timeout          = 10
+  memory_size      = 128
+  environment {
+    variables = {
+      MEDIA_UPLOADS_BUCKET = aws_s3_bucket.media_uploads.bucket
     }
   }
 }
