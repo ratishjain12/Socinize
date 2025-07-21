@@ -61,6 +61,12 @@ plan-personal:
 apply-personal:
 	@make apply AWS_PROFILE=ratish-personal
 
+plan-het:
+	@make plan AWS_PROFILE=socinize
+
+apply-het:
+	@make apply AWS_PROFILE=socinize
+
 plan-default:
 	@make plan AWS_PROFILE=default
 

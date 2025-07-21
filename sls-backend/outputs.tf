@@ -41,3 +41,13 @@ output "user_pool_arn" {
 output "identity_pool_id" {
   value = aws_cognito_identity_pool.this.id
 }
+
+output "social_connect_lambda_arn" {
+  description = "The ARN of the Social Connect Lambda function"
+  value       = aws_lambda_function.social_connect.arn
+}
+
+output "api_gateway_url" {
+  description = "The URL of the API Gateway"
+  value       = "${aws_apigatewayv2_stage.default.invoke_url}"
+}
