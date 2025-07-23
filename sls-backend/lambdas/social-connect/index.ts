@@ -1,448 +1,218 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { createHash, randomBytes } from "crypto";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   PutCommand,
   GetCommand,
-  DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { TwitterApi } from "twitter-api-v2";
 
-const dynamoClient = new DynamoDBClient({
-  region: process.env.AWS_REGION || "ap-south-1",
-});
+const client = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(client);
 
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const SOCIAL_ACCOUNTS_TABLE =
-  process.env.SOCIAL_ACCOUNTS_TABLE || "SocialAccounts";
+const { SOCIAL_ACCOUNTS_TABLE } = process.env;
 
-const CLIENT_ID =
-  process.env.TWITTER_CLIENT_ID || "UXdpNVhWdE10SlhLTUo1VnZxQ1Y6MTpjaQ";
-const CLIENT_SECRET =
-  process.env.TWITTER_CLIENT_SECRET ||
-  "vfucHWGnrXuzAo6Z9XpMGRHdH2Td8mx49gVhPxkfx5w46CtAmx";
+function createResponse(statusCode: number, body: any, headers = {}) {
+  const defaultHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type , Authorization",
+    "Access-Control-Allow-Credentials": "true",
+  };
+  return {
+    statusCode,
+    headers: { ...defaultHeaders, ...headers },
+    body: JSON.stringify(body),
+  };
+}
+
+function createRedirectResponse(location: string) {
+  const defaultHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    Location: location,
+  };
+  return {
+    statusCode: 302,
+    headers: defaultHeaders,
+    body: "",
+  };
+}
+
+function generateCodeVerifier() {
+  return randomBytes(32).toString("base64url");
+}
+
+function generateCodeChallenge(verifier: string) {
+  return createHash("sha256").update(verifier).digest("base64url");
+}
+
+function handleHome() {
+  return createResponse(200, { message: "Hello, world!" });
+}
+
+async function putSocialAccount(item: any) {
+  if (!SOCIAL_ACCOUNTS_TABLE)
+    throw new Error("SOCIAL_ACCOUNTS_TABLE env var not set");
+  const putCommand = new PutCommand({
+    TableName: SOCIAL_ACCOUNTS_TABLE,
+    Item: item,
+  });
+  await docClient.send(putCommand);
+}
+
+async function getSocialAccountByAccountId(accountId: string) {
+  if (!SOCIAL_ACCOUNTS_TABLE)
+    throw new Error("SOCIAL_ACCOUNTS_TABLE env var not set");
+  const getCommand = new GetCommand({
+    TableName: SOCIAL_ACCOUNTS_TABLE,
+    Key: { account_id: accountId },
+  });
+  const res = await docClient.send(getCommand);
+  return res.Item;
+}
+
+const CLIENT_ID = "UXdpNVhWdE10SlhLTUo1VnZxQ1Y6MTpjaQ";
+const CLIENT_SECRET = "vfucHWGnrXuzAo6Z9XpMGRHdH2Td8mx49gVhPxkfx5w46CtAmx";
 const REDIRECT_URI =
-  process.env.TWITTER_REDIRECT_URI ||
   "https://jjjmsxa5pd.execute-api.ap-south-1.amazonaws.com/connect/twitter/callback";
 
-function extractUserIdFromToken(event: APIGatewayProxyEvent): string | null {
-  try {
-    const requestContext = event.requestContext;
-    if (requestContext.authorizer && requestContext.authorizer.claims) {
-      return requestContext.authorizer.claims.sub;
-    }
-    return null;
-  } catch (error) {
-    console.error("Error extracting user ID from token:", error);
-    return null;
+async function handleAuth(event: any) {
+  console.log("🚀 Starting Twitter OAuth flow...", event);
+  const codeVerifier = generateCodeVerifier();
+  const codeChallenge = generateCodeChallenge(codeVerifier);
+  const state = randomBytes(16).toString("hex");
+  const sessionId = randomBytes(16).toString("hex");
+  const userId = event.headers.authorization;
+
+  console.log("UserrrrId", userId);
+
+  if (!userId) {
+    return createResponse(400, { error: "User ID not found" });
   }
+
+  await putSocialAccount({
+    account_id: sessionId,
+    user_id: userId,
+    code_verifier: codeVerifier,
+    state,
+    social_name: "twitter",
+    created_at: new Date().toISOString(),
+  });
+  const authParams = new URLSearchParams({
+    response_type: "code",
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT_URI,
+    scope: "tweet.read tweet.write users.read offline.access",
+    state: `${state}:${sessionId}`,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
+    user_id: userId,
+  });
+  const authUrl = `https://twitter.com/i/oauth2/authorize?${authParams.toString()}`;
+  return createRedirectResponse(authUrl);
 }
 
-async function setLoginCredentials(userId: string, credentials: any) {
-  try {
-    const timestamp = new Date().toISOString();
+async function handleCallback(event: any) {
+  console.log("EVENT::: ", event);
+  const { code, state, error } = event.queryStringParameters;
+  if (error) return createResponse(400, { error });
+  if (!code)
+    return createResponse(400, { error: "Missing authorization code" });
+  if (!state) return createResponse(400, { error: "Missing state parameter" });
+  const [originalState, sessionId] = state.split(":");
+  if (!sessionId)
+    return createResponse(400, { error: "Invalid state parameter" });
+  const sessionData = await getSocialAccountByAccountId(sessionId);
+  if (!sessionData)
+    return createResponse(400, { error: "Session expired or invalid" });
+  if (originalState !== sessionData.state)
+    return createResponse(400, { error: "Invalid state parameter" });
+  const codeVerifier = sessionData.code_verifier;
+  const userId = event.user_id;
 
-    const params = {
-      TableName: SOCIAL_ACCOUNTS_TABLE,
-      Item: {
-        account_id: userId,
-        user_id: userId,
-        social_name: "twitter",
-        access_token: credentials.accessToken,
-        refresh_token: credentials.refreshToken,
-        created_at: timestamp,
-        updated_at: timestamp,
-        is_active: true,
-      },
-    };
-
-    await docClient.send(new PutCommand(params));
-    console.log(`✅ Stored Twitter credentials for user ${userId}`);
-    return true;
-  } catch (error) {
-    console.error(`❌ Error storing Twitter credentials:`, error);
-    throw error;
+  if (!userId) {
+    return createResponse(400, { error: "User ID not found" });
   }
-}
-
-async function getLoginCredentials(userId: string) {
-  try {
-    const params = {
-      TableName: SOCIAL_ACCOUNTS_TABLE,
-      Key: {
-        account_id: userId,
-      },
-    };
-
-    const result = await docClient.send(new GetCommand(params));
-    if (result.Item) {
-      return {
-        accessToken: result.Item.access_token,
-        refreshToken: result.Item.refresh_token,
-        socialName: result.Item.social_name,
-        createdAt: result.Item.created_at,
-        updatedAt: result.Item.updated_at,
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error(`❌ Error getting Twitter credentials:`, error);
-    throw error;
-  }
-}
-
-async function setLoginVerifierForState(state: string, codeVerifier: string) {
-  try {
-    const timestamp = new Date().toISOString();
-    const userId = state.split("_")[0];
-
-    const params = {
-      TableName: SOCIAL_ACCOUNTS_TABLE,
-      Item: {
-        account_id: userId,
-        user_id: userId,
-        social_name: "twitter_verifier",
-        code_verifier: codeVerifier,
-        state: state,
-        created_at: timestamp,
-        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-        is_active: true,
-      },
-    };
-
-    await docClient.send(new PutCommand(params));
-    console.log(`✅ Stored code verifier for state: ${state}`);
-    return true;
-  } catch (error) {
-    console.error(`❌ Error storing code verifier:`, error);
-    throw error;
-  }
-}
-
-async function getLoginVerifierFromState(state: string) {
-  try {
-    const userId = state.split("_")[0];
-
-    const params = {
-      TableName: SOCIAL_ACCOUNTS_TABLE,
-      Key: {
-        account_id: userId,
-      },
-    };
-
-    const result = await docClient.send(new GetCommand(params));
-
-    if (result.Item && result.Item.social_name === "twitter_verifier") {
-      const expiresAt = new Date(result.Item.expires_at);
-      if (expiresAt < new Date()) {
-        console.log(`❌ Code verifier expired for state: ${state}`);
-
-        await deleteLoginVerifierFromState(state);
-        return null;
-      }
-
-      console.log(`✅ Retrieved code verifier for state: ${state}`);
-      return result.Item.code_verifier;
-    }
-
-    return null;
-  } catch (error) {
-    console.error(`❌ Error getting code verifier:`, error);
-    throw error;
-  }
-}
-
-async function deleteLoginVerifierFromState(state: string) {
-  try {
-    const userId = state.split("_")[0];
-
-    const params = {
-      TableName: SOCIAL_ACCOUNTS_TABLE,
-      Key: {
-        account_id: userId,
-      },
-    };
-
-    await docClient.send(new DeleteCommand(params));
-    console.log(`✅ Deleted code verifier for state: ${state}`);
-    return true;
-  } catch (error) {
-    console.error(`❌ Error deleting code verifier:`, error);
-    throw error;
-  }
-}
-
-export const handler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
-  console.log("Event:", JSON.stringify(event, null, 2));
 
   try {
-    const path = event.path;
-    const method = event.httpMethod;
-    const userId = extractUserIdFromToken(event);
-
-    const headers = {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type,Authorization",
-      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-    };
-
-    if (method === "OPTIONS") {
-      return {
-        statusCode: 200,
-        headers,
-        body: "",
-      };
-    }
-
-    const pathParts = path.split("/");
-
-    if (pathParts[2] !== "twitter") {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "Only Twitter is supported" }),
-      };
-    }
-
-    if (pathParts[3] === "auth" && method === "GET") {
-      if (!userId) {
-        return {
-          statusCode: 401,
-          headers,
-          body: JSON.stringify({ error: "Unauthorized" }),
-        };
+    const tokenParams = new URLSearchParams({
+      code: code,
+      grant_type: "authorization_code",
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      code_verifier: codeVerifier,
+    });
+    const credentials = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString(
+      "base64"
+    );
+    const fetchResponse = await fetch(
+      "https://api.twitter.com/2/oauth2/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${credentials}`,
+        },
+        body: tokenParams.toString(),
       }
-
-      console.log("🚀 Starting Twitter OAuth flow...");
-      console.log("Cognito User ID:", userId);
-
-      try {
-        const loginClient = new TwitterApi({
-          clientId: CLIENT_ID,
-          clientSecret: CLIENT_SECRET,
-        });
-
-        const { url, codeVerifier, state } = loginClient.generateOAuth2AuthLink(
-          REDIRECT_URI,
-          {
-            scope: [
-              "tweet.read",
-              "tweet.write",
-              "users.read",
-              "offline.access",
-            ],
-          }
-        );
-
-        await setLoginVerifierForState(state, codeVerifier);
-
-        console.log("🔐 Generated code_verifier:", codeVerifier);
-        console.log("🎲 Generated state:", state);
-        console.log("📎 Redirecting to Twitter authorization URL...");
-
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            success: true,
-            authUrl: url,
-            state: state,
-            platform: "twitter",
-          }),
-        };
-      } catch (error: any) {
-        console.error("❌ Error generating OAuth link:", error);
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({
-            error: "Failed to generate OAuth link",
-            details: error.message,
-          }),
-        };
-      }
-    } else if (pathParts[3] === "callback" && method === "GET") {
-      const queryParams = event.queryStringParameters || {};
-      const { code, state, error } = queryParams;
-
-      console.log("📥 Received callback from Twitter");
-      console.log("Code:", code ? "Present" : "Missing");
-      console.log("State:", state);
-      console.log("Error:", error);
-
-      if (error) {
-        console.error("❌ OAuth error:", error);
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ error: `OAuth Error: ${error}` }),
-        };
-      }
-
-      if (!code) {
-        console.error("❌ No authorization code received");
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ error: "Missing authorization code" }),
-        };
-      }
-
-      const codeVerifier = await getLoginVerifierFromState(state || "");
-      if (!codeVerifier) {
-        console.error("❌ No code verifier found for state or session expired");
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({
-            error: "You denied the app or your session expired!",
-          }),
-        };
-      }
-
-      try {
-        console.log("🔄 Exchanging authorization code for access token...");
-
-        const loginClient = new TwitterApi({
-          clientId: CLIENT_ID,
-          clientSecret: CLIENT_SECRET,
-        });
-
-        const { client, accessToken, refreshToken } =
-          await loginClient.loginWithOAuth2({
-            code,
-            codeVerifier,
-            redirectUri: REDIRECT_URI,
-          });
-
-        const concernedUser = await client.v2.me();
-        const twitterUserId = concernedUser.data.id;
-
-        console.log("🎉 Token exchange successful!");
-        console.log("Twitter User ID:", twitterUserId);
-        console.log("Access Token:", accessToken ? "Present" : "Missing");
-        console.log("Refresh Token:", refreshToken ? "Present" : "Missing");
-
-        const cognitoUserId = state?.split("_")[0];
-
-        if (!cognitoUserId) {
-          console.error("❌ No Cognito user ID found in state");
-          return {
-            statusCode: 400,
-            headers,
-            body: JSON.stringify({
-              error: "Cognito user ID not found",
-              message: "Please restart OAuth flow",
-            }),
-          };
-        }
-
-        console.log("Cognito User ID:", cognitoUserId);
-
-        await setLoginCredentials(cognitoUserId, { accessToken, refreshToken });
-
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            success: true,
-            message: "OAuth flow completed successfully!",
-            cognitoUserId: cognitoUserId,
-            twitterUser: concernedUser.data,
-            tokens: { accessToken, refreshToken },
-            nextSteps:
-              "You can now use the access_token to make API calls to Twitter",
-          }),
-        };
-      } catch (error: any) {
-        console.error("❌ Token exchange failed:");
-        console.error("Error:", error.message);
-
-        return {
-          statusCode: 403,
-          headers,
-          body: JSON.stringify({
-            error: "Invalid verifier or access tokens!",
-            details: error.message,
-            troubleshooting: {
-              common_issues: [
-                "Authorization code expired (30 second limit)",
-                "Code verifier mismatch",
-                "Invalid client credentials",
-                "Incorrect redirect URI",
-                "App not properly configured in Twitter Developer Portal",
-              ],
-            },
-          }),
-        };
-      }
-    } else if (pathParts[3] === "refresh" && method === "GET") {
-      if (!userId) {
-        return {
-          statusCode: 401,
-          headers,
-          body: JSON.stringify({ error: "Unauthorized" }),
-        };
-      }
-
-      try {
-        const credentials = await getLoginCredentials(userId);
-        if (!credentials) {
-          return {
-            statusCode: 404,
-            headers,
-            body: JSON.stringify({
-              error: "No Twitter credentials found for user",
-            }),
-          };
-        }
-
-        const client = new TwitterApi(credentials.accessToken);
-        const user = await client.v2.me();
-
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            message: "Access token is valid.",
-            user: user.data,
-            accessToken: credentials.accessToken,
-            refreshToken: credentials.refreshToken,
-          }),
-        };
-      } catch (error: any) {
-        console.error("❌ Token refresh failed:", error);
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({
-            message: "Failed to refresh token",
-            error: error.message,
-          }),
-        };
-      }
-    } else {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: "Endpoint not found" }),
-      };
-    }
+    );
+    const response = { data: await fetchResponse.json() };
+    await putSocialAccount({
+      account_id: sessionId,
+      user_id: userId,
+      code: code,
+      state: sessionData.state,
+      code_verifier: codeVerifier,
+      access_token: response.data.access_token,
+      refresh_token: response.data.refresh_token,
+      social_name: "twitter",
+      updated_at: new Date().toISOString(),
+    });
+    return createResponse(200, {
+      success: true,
+      message: "OAuth flow completed successfully!",
+      sessionId: sessionId,
+      tokens: response.data,
+      nextSteps: "Use the sessionId to make authenticated API calls",
+    });
   } catch (error: any) {
-    console.error("Lambda error:", error);
-    return {
-      statusCode: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        error: "Internal server error",
-        details: error.message,
-      }),
-    };
+    return createResponse(500, {
+      error: "Token exchange failed",
+      details: error.response?.data || error.message,
+    });
+  }
+}
+
+exports.handler = async (event: any, context: any) => {
+  const httpMethod = event.requestContext?.http?.method;
+  const rawPath = event.rawPath;
+  const pathParts = rawPath.split("/").filter((p: any) => p);
+  try {
+    if (httpMethod === "OPTIONS") return createResponse(200, {});
+    if (
+      httpMethod !== "GET" &&
+      httpMethod !== "POST" &&
+      httpMethod !== "OPTIONS"
+    ) {
+      return createResponse(405, { error: "Method Not Allowed" });
+    }
+    if (pathParts[0] === "connect" && pathParts[1] === "twitter") {
+      const endpoint = pathParts[2] || "home";
+      switch (endpoint) {
+        case "home":
+          return handleHome();
+        case "auth":
+          return handleAuth(event);
+        case "callback":
+          return handleCallback(event);
+        default:
+          return createResponse(404, { error: "Endpoint not found" });
+      }
+    }
+  } catch (error) {
+    return createResponse(500, {
+      error: "Internal server error and error from catch block",
+    });
   }
 };
