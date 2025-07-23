@@ -10,6 +10,13 @@ terraform {
       version = "3.6.1"
     }
   }
+
+  backend "s3" {
+    bucket  = "socinize-terraform-state"
+    key     = "prod/terraform.tfstate"
+    region  = "ap-south-1"
+    encrypt = true
+  }
 }
 provider "aws" {
   region = var.region
