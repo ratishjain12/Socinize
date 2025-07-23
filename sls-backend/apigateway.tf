@@ -1,6 +1,15 @@
 resource "aws_apigatewayv2_api" "api" {
   name          = "SocinizeApi"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_credentials = false
+    allow_headers     = ["content-type", "authorization"]
+    allow_methods     = ["GET", "POST", "OPTIONS"]
+    allow_origins     = ["*"]
+    expose_headers    = ["location"]
+    max_age          = 300
+  }
 }
 
 resource "aws_apigatewayv2_authorizer" "cognito_authorizer" {
@@ -29,8 +38,7 @@ resource "aws_apigatewayv2_integration" "social_connect_integration" {
   api_id             = aws_apigatewayv2_api.api.id
   integration_type   = "AWS_PROXY"
   integration_uri    = aws_lambda_function.social_connect.invoke_arn
-  integration_method = "POST"
-  payload_format_version = "2.0"
+  authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "create_draft_route" {
