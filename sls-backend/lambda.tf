@@ -73,6 +73,12 @@ data "archive_file" "generate_presigned_url_zip" {
   output_path = "${path.module}/lambdas/build/generate-presigned-url/generate-presigned-url.zip"
 }
 
+resource "aws_lambda_layer_version" "node_modules" {
+  filename            = "${path.module}/lambda-layer/lambda-layer.zip"
+  layer_name          = "socinize-node-modules"
+  compatible_runtimes = ["nodejs20.x"]
+}
+
 resource "aws_lambda_function" "post_confirmation" {
   function_name    = "PostConfirmationFunction"
   role             = aws_iam_role.lambda_exec.arn
@@ -87,6 +93,7 @@ resource "aws_lambda_function" "post_confirmation" {
       USERS_TABLE = aws_dynamodb_table.users.name
     }
   }
+  layers = [aws_lambda_layer_version.node_modules.arn]
 }
 
 resource "aws_lambda_function" "social_connect" {
@@ -105,6 +112,7 @@ resource "aws_lambda_function" "social_connect" {
       TWITTER_CLIENT_SECRET = var.twitter_client_secret
     }
   }
+  layers = [aws_lambda_layer_version.node_modules.arn]
 }
 
 resource "aws_lambda_function" "create_draft" {
@@ -121,6 +129,7 @@ resource "aws_lambda_function" "create_draft" {
       POSTS_TABLE = aws_dynamodb_table.posts.name
     }
   }
+  layers = [aws_lambda_layer_version.node_modules.arn]
 }
 
 resource "aws_lambda_function" "generate_presigned_url" {
@@ -137,6 +146,7 @@ resource "aws_lambda_function" "generate_presigned_url" {
       MEDIA_UPLOADS_BUCKET = aws_s3_bucket.media_uploads.bucket
     }
   }
+  layers = [aws_lambda_layer_version.node_modules.arn]
 }
 
 resource "aws_lambda_permission" "post_confirmation" {

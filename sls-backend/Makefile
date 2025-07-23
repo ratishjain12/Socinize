@@ -97,3 +97,7 @@ help:
 	@echo "  make apply AWS_PROFILE=ratish-personal"
 	@echo "  make plan-personal"
 	@echo "  make apply-personal" 
+
+layer:
+	cd lambda-layer/nodejs && npm install --production
+	cd lambda-layer && zip -r lambda-layer.zip .
