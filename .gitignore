@@ -42,3 +42,5 @@ lambda/**/build/
 *.swo
 .idea/
 .vscode/
+
+*.zip
