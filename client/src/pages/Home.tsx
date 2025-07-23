@@ -1,7 +1,26 @@
 import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 export const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
+
+  const handleGetStarted = async () => {
+    //
+
+    window.location.href =
+      "https://jjjmsxa5pd.execute-api.ap-south-1.amazonaws.com/connect/twitter/auth?UserId=123";
+
+    // console.log(response, "sdfmgfms");
+
+    // const redirectLocation = response.headers.get("Location");
+    // if (redirectLocation) {
+    //   // Manually redirect the browser
+    //   window.location.href = redirectLocation;
+    // } else {
+    //   alert("Redirect URL not found");
+    // }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
@@ -122,7 +141,10 @@ export const Home = () => {
             platform that brings people together like never before.
           </p>
           <div className="mt-12 flex flex-col sm:flex-row gap-6 justify-center">
-            <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-semibold rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <button
+              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-semibold rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+              onClick={handleGetStarted}
+            >
               Learn More
             </button>
             <button className="px-8 py-4 bg-transparent border-2 border-gray-300 text-gray-700 font-semibold rounded-2xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">

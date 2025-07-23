@@ -83,7 +83,7 @@ async function handleAuth(event: any) {
   const codeChallenge = generateCodeChallenge(codeVerifier);
   const state = randomBytes(16).toString("hex");
   const sessionId = randomBytes(16).toString("hex");
-  const userId = event.headers.authorization;
+  const userId = event.queryStringParameters.userId;
 
   console.log("UserrrrId", userId);
 
@@ -104,7 +104,7 @@ async function handleAuth(event: any) {
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
     scope: "tweet.read tweet.write users.read offline.access",
-    state: `${state}:${sessionId}`,
+    state: `${state}:${sessionId}:${userId}`,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
     user_id: userId,
@@ -120,7 +120,7 @@ async function handleCallback(event: any) {
   if (!code)
     return createResponse(400, { error: "Missing authorization code" });
   if (!state) return createResponse(400, { error: "Missing state parameter" });
-  const [originalState, sessionId] = state.split(":");
+  const [originalState, sessionId, userId] = state.split(":");
   if (!sessionId)
     return createResponse(400, { error: "Invalid state parameter" });
   const sessionData = await getSocialAccountByAccountId(sessionId);
@@ -129,7 +129,6 @@ async function handleCallback(event: any) {
   if (originalState !== sessionData.state)
     return createResponse(400, { error: "Invalid state parameter" });
   const codeVerifier = sessionData.code_verifier;
-  const userId = event.user_id;
 
   if (!userId) {
     return createResponse(400, { error: "User ID not found" });
