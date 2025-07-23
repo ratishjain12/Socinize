@@ -1,7 +1,67 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "ClashDisplay";
+  src: url("/ClashDisplay-Regular.woff2") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ClashDisplay";
+  src: url("/ClashDisplay-Regular.woff2") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ClashDisplay";
+  src: url("/ClashDisplay-Regular.woff2") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ClashDisplay";
+  src: url("/ClashDisplay-Regular.woff2") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ClashDisplay";
+  src: url("/ClashDisplay-Regular.woff2") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ClashDisplay";
+  src: url("/ClashDisplay-Regular.woff2") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --socinize-primary-teal: #4F46E5;
+  --socinize-primary-blue: #4F46E5;
+  --socinize-gradient: #4F46E5;
+  --socinize-background-dark: #0f111a;
+  --socinize-background-slate: #0f172a;
+  --socinize-text-primary: #ffffff;
+  --socinize-text-secondary: #c1c8d6;
+  --socinize-text-muted: #e2e8f0;
+  --socinize-text-nav: #a0aec0;
+  --socinize-ui-border: #a0aec0;
+  --socinize-ui-path: #475569;
+  --socinize-ui-overlay: #0f111a;
+  font-family: "ClashDisplay", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
