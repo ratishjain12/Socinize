@@ -34,7 +34,7 @@ export class TwitterProvider implements SocialMediaProvider {
     const codeChallenge = generateCodeChallenge(codeVerifier);
     const state = generateState();
     const sessionId = generateSessionId();
-    const userId = validateUserId(event.queryStringParameters?.userId);
+    const userId = event.queryStringParameters?.userId;
 
     console.log("UserrrrId", userId);
 
@@ -133,18 +133,135 @@ export class TwitterProvider implements SocialMediaProvider {
 
       const redirectUrl = `http://localhost:5173`;
       return createRedirectResponse(redirectUrl);
-
-      return createResponse(200, {
-        success: true,
-        message: "OAuth flow completed successfully!",
-        sessionId: sessionId,
-        tokens: response.data,
-        nextSteps: "Use the sessionId to make authenticated API calls",
-      });
     } catch (error: any) {
       return createResponse(500, {
         error: "Token exchange failed",
         details: error.response?.data || error.message,
+      });
+    }
+  }
+
+  async refreshToken(event: any): Promise<AuthResponse> {
+    console.log("🔄 Starting token refresh...", event);
+
+    const userId = event.queryStringParameters?.userId;
+    if (!userId) {
+      return createResponse(400, { error: "User ID not found" });
+    }
+
+    const sessionData = await getSocialAccountByAccountId(userId);
+    if (!sessionData || !sessionData.refresh_token) {
+      return createResponse(401, { error: "No refresh token found" });
+    }
+
+    try {
+      const credentials = Buffer.from(
+        `${this.config.clientId}:${this.config.clientSecret}`
+      ).toString("base64");
+
+      const tokenParams = new URLSearchParams({
+        refresh_token: sessionData.refresh_token,
+        grant_type: "refresh_token",
+        client_id: this.config.clientId,
+      });
+
+      const fetchResponse = await fetch(this.config.tokenUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${credentials}`,
+        },
+        body: tokenParams.toString(),
+      });
+
+      const response = { data: await fetchResponse.json() };
+
+      // Update tokens in database
+      await putSocialAccount({
+        account_id: userId,
+        user_id: sessionData.user_id,
+        code_verifier: sessionData.code_verifier,
+        state: sessionData.state,
+        access_token: response.data.access_token,
+        refresh_token: response.data.refresh_token || sessionData.refresh_token,
+        social_name: this.config.socialName,
+        created_at: sessionData.created_at,
+        updated_at: new Date().toISOString(),
+      });
+
+      return createResponse(200, {
+        success: true,
+        message: "Token refreshed successfully!",
+        tokens: response.data,
+      });
+    } catch (error: any) {
+      console.error("❌ Token refresh failed:", error);
+      return createResponse(500, {
+        error: "Token refresh failed",
+        details: error.response?.data || error.message,
+      });
+    }
+  }
+
+  async createTweet(event: any): Promise<AuthResponse> {
+    console.log("🐦 Creating tweet...", event);
+
+    const userId = validateUserId(event.queryStringParameters?.userId);
+    if (!userId) {
+      return createResponse(400, { error: "User ID not found" });
+    }
+
+    const sessionData = await getSocialAccountByAccountId(userId);
+    if (!sessionData || !sessionData.access_token) {
+      return createResponse(401, { error: "No access token found" });
+    }
+
+    // Parse request body for tweet text
+    let tweetText = "";
+    try {
+      if (event.body) {
+        const body = JSON.parse(event.body);
+        tweetText = body.text || "";
+      }
+    } catch (error) {
+      return createResponse(400, { error: "Invalid request body" });
+    }
+
+    if (!tweetText) {
+      return createResponse(400, { error: "Tweet text is required" });
+    }
+
+    try {
+      const fetchResponse = await fetch("https://api.twitter.com/2/tweets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData.access_token}`,
+        },
+        body: JSON.stringify({
+          text: tweetText,
+        }),
+      });
+
+      const response = { data: await fetchResponse.json() };
+
+      if (!fetchResponse.ok) {
+        return createResponse(fetchResponse.status, {
+          error: "Failed to create tweet",
+          details: response.data,
+        });
+      }
+
+      return createResponse(200, {
+        success: true,
+        message: "Tweet created successfully!",
+        tweet: response.data,
+      });
+    } catch (error: any) {
+      console.error("❌ Tweet creation failed:", error);
+      return createResponse(500, {
+        error: "Tweet creation failed",
+        details: error.message,
       });
     }
   }

@@ -30,5 +30,7 @@ export interface AuthResponse {
 export interface SocialMediaProvider {
   handleAuth(event: any): Promise<AuthResponse>;
   handleCallback(event: any): Promise<AuthResponse>;
+  refreshToken(event: any): Promise<AuthResponse>;
+  createTweet(event: any): Promise<AuthResponse>;
   getConfig(): SocialMediaConfig;
 }

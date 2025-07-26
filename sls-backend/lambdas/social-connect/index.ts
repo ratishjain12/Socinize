@@ -12,6 +12,8 @@ function handleHome() {
     endpoints: {
       auth: "/connect/{platform}/auth",
       callback: "/connect/{platform}/callback",
+      refreshToken: "/connect/{platform}/refresh-token",
+      createTweet: "/connect/{platform}/create-tweet",
       home: "/connect/{platform}/home",
     },
   });
@@ -72,6 +74,10 @@ exports.handler = async (event: any, context: any) => {
           return await provider.handleAuth(event);
         case "callback":
           return await provider.handleCallback(event);
+        case "refresh-token":
+          return await provider.refreshToken(event);
+        case "create-tweet":
+          return await provider.createTweet(event);
         default:
           return handleNotFound();
       }
