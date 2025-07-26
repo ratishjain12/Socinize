@@ -80,10 +80,16 @@ resource "aws_apigatewayv2_route" "twitter_callback_route" {
 
 resource "aws_apigatewayv2_route" "twitter_refresh_route" {
   api_id    = aws_apigatewayv2_api.api.id
-  route_key = "GET /connect/twitter/refresh"
+  route_key = "GET /connect/twitter/refresh-token"
   target    = "integrations/${aws_apigatewayv2_integration.social_connect_integration.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_route" "twitter_create_tweet_route" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "POST /connect/twitter/create-tweet"
+  target    = "integrations/${aws_apigatewayv2_integration.social_connect_integration.id}"
+  authorization_type = "NONE"
 }
 
 resource "aws_lambda_permission" "apigw_create_draft" {
