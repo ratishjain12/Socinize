@@ -144,7 +144,11 @@ export class TwitterProvider implements SocialMediaProvider {
   async refreshToken(event: any): Promise<AuthResponse> {
     console.log("🔄 Starting token refresh...", event);
 
-    const userId = event.queryStringParameters?.userId;
+    const claims = (event.requestContext as any).authorizer?.claims;
+    const userId = claims?.sub;
+
+    console.log("JWT User ID for refresh:", userId);
+
     if (!userId) {
       return createResponse(400, { error: "User ID not found" });
     }
@@ -206,7 +210,12 @@ export class TwitterProvider implements SocialMediaProvider {
   async createTweet(event: any): Promise<AuthResponse> {
     console.log("🐦 Creating tweet...", event);
 
-    const userId = validateUserId(event.queryStringParameters?.userId);
+    const claims = (event.requestContext as any).authorizer?.claims;
+    const userId = claims?.sub;
+
+    console.log("USER ID :::", userId);
+    console.log("Full JWT Claims:", JSON.stringify(claims, null, 2));
+
     if (!userId) {
       return createResponse(400, { error: "User ID not found" });
     }
