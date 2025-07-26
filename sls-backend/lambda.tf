@@ -57,7 +57,7 @@ data "archive_file" "post_confirmation_zip" {
 
 data "archive_file" "social_connect_zip" {
   type        = "zip"
-  source_file  = "${path.module}/lambdas/build/social-connect/index.js"
+  source_dir  = "${path.module}/lambdas/build/social-connect"
   output_path = "${path.module}/lambdas/build/social-connect/social-connect.zip"
 }
 
