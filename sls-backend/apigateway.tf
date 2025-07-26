@@ -52,8 +52,7 @@ resource "aws_apigatewayv2_route" "twitter_auth_route" {
   api_id    = aws_apigatewayv2_api.api.id
   route_key = "GET /connect/twitter/auth"
   target    = "integrations/${aws_apigatewayv2_integration.social_connect_integration.id}"
-   authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_integration" "generate_presigned_url_lambda" {

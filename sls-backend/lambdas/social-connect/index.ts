@@ -184,8 +184,9 @@ async function handleCallback(event: any) {
 }
 
 exports.handler = async (event: any, context: any) => {
-  const httpMethod = event.requestContext?.http?.method;
-  const rawPath = event.rawPath;
+  console.log("EVENT::: ", event);
+  const httpMethod = event.requestContext?.httpMethod;
+  const rawPath = event.path;
   const pathParts = rawPath.split("/").filter((p: any) => p);
   try {
     if (httpMethod === "OPTIONS") return createResponse(200, {});
