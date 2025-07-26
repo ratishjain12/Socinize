@@ -131,6 +131,9 @@ export class TwitterProvider implements SocialMediaProvider {
         updated_at: new Date().toISOString(),
       });
 
+      const redirectUrl = `http://localhost:5173`;
+      return createRedirectResponse(redirectUrl);
+
       return createResponse(200, {
         success: true,
         message: "OAuth flow completed successfully!",
