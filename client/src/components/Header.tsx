@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { Logo } from "@/components/ui/logo";
 
 export const Header: React.FC = () => {
   const { user, signOut, isAuthenticated } = useAuth();
@@ -14,7 +15,7 @@ export const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-6">
-            <h1 className="text-xl font-semibold text-gray-900">Socinize</h1>
+            <Logo />
             <nav className="flex space-x-4">
               <Link
                 to="/"

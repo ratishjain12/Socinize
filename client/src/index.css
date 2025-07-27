@@ -49,9 +49,9 @@
 }
 
 :root {
-  --socinize-primary-teal: #4F46E5;
-  --socinize-primary-blue: #4F46E5;
-  --socinize-gradient: #4F46E5;
+  --socinize-primary-teal: #4f46e5;
+  --socinize-primary-blue: #4f46e5;
+  --socinize-gradient: #4f46e5;
   --socinize-background-dark: #0f111a;
   --socinize-background-slate: #0f172a;
   --socinize-text-primary: #ffffff;
@@ -68,6 +68,10 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@theme inline {
+  --brand-bg: var(--brand-bg);
 }
 
 body {

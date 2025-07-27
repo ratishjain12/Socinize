@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Logo } from "./ui/logo";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,16 +11,9 @@ export const Navbar = () => {
           {/* Logo Section */}
           <div className="flex items-center space-x-3 group">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-tr from-[#00C6A2] to-[#007CF0] rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-2xl group-hover:shadow-cyan-400/25 transition-all duration-300 group-hover:scale-105">
-                <span className="text-white font-bold text-xl tracking-tight">
-                  S
-                </span>
-              </div>
               <div className="absolute -inset-1 bg-gradient-to-tr from-[#00C6A2] to-[#007CF0] rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
             </div>
-            <span className="text-3xl font-black bg-gradient-to-r from-[#00C6A2] to-[#007CF0] bg-clip-text text-transparent tracking-tight font-clash">
-              Socinize
-            </span>
+            <Logo />
           </div>
 
           {/* Desktop Navigation */}
@@ -37,7 +31,7 @@ export const Navbar = () => {
             ))}
 
             <div className="ml-6">
-              <button className="relative px-8 py-3 bg-gradient-to-r from-[#00C6A2] to-[#007CF0] text-white font-semibold rounded-2xl overflow-hidden group shadow-lg hover:shadow-2xl hover:shadow-cyan-500/25 transition-all duration-300 transform hover:scale-105 font-clash">
+              <button className="relative px-8 py-3 bg-gradient-to-b from-[#6a85dd] to-[#1e3799] text-white font-semibold rounded-2xl overflow-hidden group shadow-lg hover:shadow-2xl hover:shadow-cyan-500/25 transition-all duration-300 transform hover:scale-105 font-clash">
                 <span className="relative z-10">Get Started</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#00C6A2] to-[#007CF0] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 
 function FloatingPaths({ position }: { position: number }) {
   const paths = Array.from({ length: 36 }, (_, i) => ({
@@ -62,13 +61,8 @@ export function HeroBackgroundPaths({
   onPrimaryClick,
   onSecondaryClick,
 }: HeroBackgroundPathsProps) {
-  const words = title.split(" ");
-
   return (
-    <div
-      className="relative min-h-screen w-full flex items-center justify-center overflow-hidden"
-      style={{ background: "var(--socinize-background-slate)" }}
-    >
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0A0A0B]">
       <div className="absolute inset-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
@@ -102,8 +96,7 @@ export function HeroBackgroundPaths({
           >
             <button
               onClick={onPrimaryClick}
-              className="px-8 py-4 font-semibold rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg font-clash [color:var(--socinize-text-primary)]"
-              style={{ background: "var(--socinize-primary-teal)" }}
+              className="px-8 py-4 font-semibold rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg font-clash bg-[#1133B6]"
             >
               {primaryButtonText}
             </button>
