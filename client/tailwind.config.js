@@ -22,6 +22,8 @@ module.exports = {
         inter: ["Inter", "system-ui", "sans-serif"],
         space: ["Space Grotesk", "monospace"],
         instrument: ["Instrument Serif", "serif"],
+        muli: ["Muli", "sans-serif"],
+        sourcesans: ["Source Sans 3", "sans-serif"],
       },
       animation: {
         fadeIn: "fadeIn 0.6s ease-out forwards",
