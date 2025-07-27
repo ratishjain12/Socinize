@@ -13,8 +13,8 @@ import {
 
 export class TwitterProvider implements SocialMediaProvider {
   private config: SocialMediaConfig = {
-    clientId: "UXdpNVhWdE10SlhLTUo1VnZxQ1Y6MTpjaQ",
-    clientSecret: "vfucHWGnrXuzAo6Z9XpMGRHdH2Td8mx49gVhPxkfx5w46CtAmx",
+    clientId: process.env.TWITTER_CLIENT_ID || "",
+    clientSecret: process.env.TWITTER_CLIENT_SECRET || "",
     redirectUri:
       "https://jjjmsxa5pd.execute-api.ap-south-1.amazonaws.com/connect/twitter/callback",
     authUrl: "https://twitter.com/i/oauth2/authorize",
@@ -180,7 +180,6 @@ export class TwitterProvider implements SocialMediaProvider {
 
       const response = { data: await fetchResponse.json() };
 
-      // Update tokens in database
       await putSocialAccount({
         account_id: userId,
         user_id: sessionData.user_id,
@@ -225,7 +224,6 @@ export class TwitterProvider implements SocialMediaProvider {
       return createResponse(401, { error: "No access token found" });
     }
 
-    // Parse request body for tweet text
     let tweetText = "";
     try {
       if (event.body) {

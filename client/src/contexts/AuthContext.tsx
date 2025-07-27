@@ -27,19 +27,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuthState();
-
-    // Set up periodic auth state check every 5 seconds
-    const interval = setInterval(() => {
-      if (!isLoading) {
-        checkAuthState();
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isLoading]);
-
   const checkAuthState = async () => {
     try {
       const currentUser = await getCurrentUser();
@@ -61,6 +48,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    checkAuthState();
+
+    const interval = setInterval(() => {
+      checkAuthState();
+    }, 12 * 60 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const refreshAuthState = async () => {
     setIsLoading(true);
