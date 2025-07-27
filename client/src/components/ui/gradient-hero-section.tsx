@@ -210,7 +210,7 @@ const GradientBars: React.FC = () => {
                 maxWidth: "calc(100% / 15)",
                 height: "100%",
                 background:
-                  "linear-gradient(to top, rgb(255, 60, 0), transparent)",
+                  "linear-gradient(to top, rgb(30, 55, 153), transparent)",
                 transform: `scaleY(${height / 100})`,
                 transformOrigin: "bottom",
                 transition: "transform 0.5s ease-in-out",
@@ -229,9 +229,26 @@ const GradientBars: React.FC = () => {
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent py-6 px-6 md:px-12">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 py-4 px-6 md:px-12 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg"
+          : "bg-transparent"
+      }`}
+    >
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
@@ -246,24 +263,6 @@ const Navbar: React.FC = () => {
               className="text-gray-300 hover:text-white transition-colors duration-300 font-space"
             >
               Features
-            </a>
-            <a
-              href="#vision"
-              className="text-gray-300 hover:text-white transition-colors duration-300 font-space"
-            >
-              Vision
-            </a>
-            <a
-              href="#press"
-              className="text-gray-300 hover:text-white transition-colors duration-300 font-space"
-            >
-              Press
-            </a>
-            <a
-              href="#contact"
-              className="text-gray-300 hover:text-white transition-colors duration-300 font-space"
-            >
-              Contact
             </a>
             <a
               href="#hero"
@@ -284,31 +283,19 @@ const Navbar: React.FC = () => {
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden mt-4 bg-gray-900 bg-opacity-95 backdrop-blur-sm rounded-lg p-4 animate-fadeIn">
+          <div
+            className={`md:hidden mt-4 rounded-lg p-4 animate-fadeIn ${
+              isScrolled
+                ? "bg-white/10 backdrop-blur-md border border-white/20"
+                : "bg-gray-900 bg-opacity-95 backdrop-blur-sm"
+            }`}
+          >
             <div className="flex flex-col space-y-4">
               <a
                 href="#features"
                 className="text-gray-300 hover:text-white transition-colors duration-300 py-2 font-space"
               >
                 Features
-              </a>
-              <a
-                href="#vision"
-                className="text-gray-300 hover:text-white transition-colors duration-300 py-2 font-space"
-              >
-                Vision
-              </a>
-              <a
-                href="#press"
-                className="text-gray-300 hover:text-white transition-colors duration-300 py-2 font-space"
-              >
-                Press
-              </a>
-              <a
-                href="#contact"
-                className="text-gray-300 hover:text-white transition-colors duration-300 py-2 font-space"
-              >
-                Contact
               </a>
               <button className="bg-white hover:bg-gray-100 text-black px-5 py-2 rounded-full transition-all duration-300 w-full font-space">
                 Join The Waitlist
@@ -321,7 +308,7 @@ const Navbar: React.FC = () => {
   );
 };
 
-export const HeroSection: React.FC = () => {
+export default function HeroSection() {
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -397,4 +384,4 @@ export const HeroSection: React.FC = () => {
       </div>
     </section>
   );
-};
+}
