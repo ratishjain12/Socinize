@@ -2,17 +2,15 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { AuthMiddleware } from "./AuthMiddleware";
 import { Header } from "./Header";
-import { Home } from "../pages/Home";
 import { Dashboard } from "../pages/Dashboard";
 import { Profile } from "../pages/Profile";
+import Landing from "../pages/Landing";
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public route - no authentication required */}
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Landing />} />
 
-      {/* Protected routes - wrapped in AuthMiddleware */}
       <Route
         path="/dashboard"
         element={
