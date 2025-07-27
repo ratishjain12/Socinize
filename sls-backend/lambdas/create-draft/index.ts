@@ -15,22 +15,7 @@ export const handler = async (
     if (!event.body) {
       return { statusCode: 400, body: "Missing request body" };
     }
-
-    const {
-      platform,
-      content,
-      media,
-      status = "draft",
-    } = JSON.parse(event.body);
-
-    if (!["draft", "active", "scheduled"].includes(status)) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          error: "Invalid status. Must be 'draft', 'active', or 'scheduled'",
-        }),
-      };
-    }
+    const { platform, content, media } = JSON.parse(event.body);
 
     const claims = (event.requestContext as any).authorizer?.jwt?.claims;
     const userId = claims?.sub;
@@ -47,7 +32,7 @@ export const handler = async (
       platform,
       content,
       media,
-      status,
+      status: "draft",
       created_at: now,
       updated_at: now,
     };
@@ -61,7 +46,7 @@ export const handler = async (
 
     return {
       statusCode: 201,
-      body: JSON.stringify({ post_id: postId, status }),
+      body: JSON.stringify({ post_id: postId, status: "draft" }),
     };
   } catch (err) {
     console.error(err);
