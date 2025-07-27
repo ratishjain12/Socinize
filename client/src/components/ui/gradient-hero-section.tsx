@@ -123,21 +123,21 @@ const WaitlistForm: React.FC = () => {
       {!isSubmitted ? (
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row gap-3"
+          className="flex flex-col sm:flex-row gap-2 sm:gap-3"
         >
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter Your Email"
-            className="flex-1 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gray-900/60 border border-gray-700 focus:border-white outline-none text-white text-sm sm:text-base shadow-[0_0_15px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-300 font-space"
+            className="flex-1 px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-full bg-gray-900/60 border border-gray-700 focus:border-white outline-none text-white text-xs sm:text-sm md:text-base shadow-[0_0_15px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-300 font-space"
             required
             disabled={isSubmitting}
           />
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full transition-all duration-300 transform hover:scale-105 whitespace-nowrap text-sm sm:text-base font-space ${
+            className={`px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 transform hover:scale-105 whitespace-nowrap text-xs sm:text-sm md:text-base font-space ${
               isSubmitting
                 ? "bg-gray-600 text-gray-300 cursor-not-allowed"
                 : "bg-white hover:bg-gray-100 text-black"
@@ -145,8 +145,10 @@ const WaitlistForm: React.FC = () => {
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center">
-                <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-black rounded-full animate-spin mr-2"></div>
-                Joining...
+                <div className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 border-2 border-gray-300 border-t-black rounded-full animate-spin mr-1 sm:mr-2"></div>
+                <span className="text-xs sm:text-sm md:text-base">
+                  Joining...
+                </span>
               </div>
             ) : (
               "Join The Waitlist"
@@ -154,7 +156,7 @@ const WaitlistForm: React.FC = () => {
           </button>
         </form>
       ) : (
-        <div className="bg-green-500/20 border border-green-500/30 text-green-300 rounded-full px-6 sm:px-8 py-3 sm:py-4 text-center animate-fadeIn text-sm sm:text-base font-space">
+        <div className="bg-green-500/20 border border-green-500/30 text-green-300 rounded-full px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-center animate-fadeIn text-xs sm:text-sm md:text-base font-space">
           Thanks! You're now on the waitlist. We'll notify you when we launch.
         </div>
       )}
@@ -361,24 +363,22 @@ export default function HeroSection() {
         </div>
 
         <h1 className="w-full text-white leading-tight tracking-tight mb-6 sm:mb-8 animate-fadeIn px-4">
-          <span className="block font-inter font-medium text-[clamp(1.5rem,6vw,3.75rem)] whitespace-nowrap">
+          <span className="block font-inter font-medium text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-tight">
             Manage All Your Social Media,
           </span>
-          <span className="block font-instrument italic text-[clamp(1.5rem,6vw,3.75rem)] whitespace-nowrap">
+          <span className="block font-instrument italic text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-tight">
             From One Place.
           </span>
         </h1>
 
         <div className="mb-6 sm:mb-10 px-4">
-          <p className="text-[clamp(1rem,3vw,1.5rem)] text-gray-400 leading-relaxed animate-fadeIn animation-delay-200 font-space">
-            Be the first to know when we launch.
-          </p>
-          <p className="text-[clamp(1rem,3vw,1.5rem)] text-gray-400 leading-relaxed animate-fadeIn animation-delay-300 font-space">
-            Join the waitlist and get exclusive early access.
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 leading-relaxed animate-fadeIn animation-delay-200 font-space">
+            Be the first to know when we launch. <br /> Join the waitlist and
+            get exclusive early access.
           </p>
         </div>
 
-        <div className="w-full max-w-2xl mb-6 sm:mb-8 px-4">
+        <div className="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mb-6 sm:mb-8 px-4">
           <WaitlistForm />
         </div>
       </div>
