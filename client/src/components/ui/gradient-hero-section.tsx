@@ -1,74 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+"use client";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { ArrowRight, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { waitlistService } from "../../services/waitlistService";
 import { supabase } from "../../supabase/client";
 
-type AvatarProps = {
-  imageSrc: string;
-  delay: number;
-};
-
-const Avatar: React.FC<AvatarProps> = ({ imageSrc, delay }) => {
-  return (
-    <div
-      className="relative h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full overflow-hidden border-2 border-gray-700 shadow-lg animate-fadeIn"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <img
-        src={imageSrc}
-        alt="User avatar"
-        className="h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-    </div>
-  );
-};
-
-const TrustElements: React.FC<{
-  waitlistCount: number | null;
-  isLoading: boolean;
-}> = ({ waitlistCount, isLoading }) => {
-  const avatars = [
-    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-  ];
-
-  const formatCount = (count: number) => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`;
-    }
-    return count.toString();
-  };
-
-  return (
-    <div className="inline-flex items-center space-x-3 bg-gray-900/60 backdrop-blur-sm rounded-full py-2 px-3 sm:py-2 sm:px-4 text-xs sm:text-sm">
-      <div className="flex -space-x-2 sm:-space-x-3">
-        {avatars.map((avatar, index) => (
-          <Avatar key={index} imageSrc={avatar} delay={index * 200} />
-        ))}
-      </div>
-      <p
-        className="text-white animate-fadeIn whitespace-nowrap font-space"
-        style={{ animationDelay: "800ms" }}
-      >
-        {isLoading ? (
-          <span className="text-white font-semibold">Loading...</span>
-        ) : (
-          <>
-            <span className="text-white font-semibold">
-              {formatCount(waitlistCount || 0)}
-            </span>{" "}
-            currently on the waitlist
-          </>
-        )}
-      </p>
-    </div>
-  );
-};
-
-const WaitlistForm: React.FC = () => {
+export default function HeroSection() {
+  const [waitlistCount, setWaitlistCount] = useState<number>(0);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -118,202 +57,6 @@ const WaitlistForm: React.FC = () => {
     }
   };
 
-  return (
-    <div className="relative z-10 w-full">
-      {!isSubmitted ? (
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row gap-2 sm:gap-3"
-        >
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter Your Email"
-            className="flex-1 px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-full bg-gray-900/60 border border-gray-700 focus:border-white outline-none text-white text-xs sm:text-sm md:text-base shadow-[0_0_15px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-300 font-space"
-            required
-            disabled={isSubmitting}
-          />
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 transform hover:scale-105 whitespace-nowrap text-xs sm:text-sm md:text-base font-space ${
-              isSubmitting
-                ? "bg-gray-600 text-gray-300 cursor-not-allowed"
-                : "bg-white hover:bg-gray-100 text-black"
-            }`}
-          >
-            {isSubmitting ? (
-              <div className="flex items-center justify-center">
-                <div className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 border-2 border-gray-300 border-t-black rounded-full animate-spin mr-1 sm:mr-2"></div>
-                <span className="text-xs sm:text-sm md:text-base">
-                  Joining...
-                </span>
-              </div>
-            ) : (
-              "Join The Waitlist"
-            )}
-          </button>
-        </form>
-      ) : (
-        <div className="bg-green-500/20 border border-green-500/30 text-green-300 rounded-full px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-center animate-fadeIn text-xs sm:text-sm md:text-base font-space">
-          Thanks! You're now on the waitlist. We'll notify you when we launch.
-        </div>
-      )}
-
-      {message && (
-        <div
-          className={`mt-4 p-3 rounded-lg text-sm ${
-            message.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const GradientBars: React.FC = () => {
-  const [numBars] = useState(15);
-
-  const calculateHeight = (index: number, total: number) => {
-    const position = index / (total - 1);
-    const maxHeight = 100;
-    const minHeight = 30;
-
-    const center = 0.5;
-    const distanceFromCenter = Math.abs(position - center);
-    const heightPercentage = Math.pow(distanceFromCenter * 2, 1.2);
-
-    return minHeight + (maxHeight - minHeight) * heightPercentage;
-  };
-
-  return (
-    <div className="absolute inset-0 z-0 overflow-hidden">
-      <div
-        className="flex h-full"
-        style={{
-          width: "100%",
-          transform: "translateZ(0)",
-          backfaceVisibility: "hidden",
-          WebkitFontSmoothing: "antialiased",
-        }}
-      >
-        {Array.from({ length: numBars }).map((_, index) => {
-          const height = calculateHeight(index, numBars);
-          return (
-            <div
-              key={index}
-              style={{
-                flex: "1 0 calc(100% / 15)",
-                maxWidth: "calc(100% / 15)",
-                height: "100%",
-                background:
-                  "linear-gradient(to top, rgb(30, 55, 153), transparent)",
-                transform: `scaleY(${height / 100})`,
-                transformOrigin: "bottom",
-                transition: "transform 0.5s ease-in-out",
-                animation: "pulseBar 2s ease-in-out infinite alternate",
-                animationDelay: `${index * 0.1}s`,
-                outline: "1px solid rgba(0, 0, 0, 0)",
-                boxSizing: "border-box",
-              }}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-const Navbar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 py-4 px-6 md:px-12 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <span className="text-white font-bold text-xl tracking-tighter font-space">
-              Socinize
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-8">
-            <a
-              href="#features"
-              className="text-gray-300 hover:text-white transition-colors duration-300 font-space"
-            >
-              Features
-            </a>
-            <a
-              href="#hero"
-              className="bg-white hover:bg-gray-100 text-black px-5 py-2 rounded-full transition-all duration-300 transform hover:scale-105 font-space"
-            >
-              Join The Waitlist
-            </a>
-          </div>
-
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {isMenuOpen && (
-          <div
-            className={`md:hidden mt-4 rounded-lg p-4 animate-fadeIn ${
-              isScrolled
-                ? "bg-white/10 backdrop-blur-md border border-white/20"
-                : "bg-gray-900 bg-opacity-95 backdrop-blur-sm"
-            }`}
-          >
-            <div className="flex flex-col space-y-4">
-              <a
-                href="#features"
-                className="text-gray-300 hover:text-white transition-colors duration-300 py-2 font-space"
-              >
-                Features
-              </a>
-              <button className="bg-white hover:bg-gray-100 text-black px-5 py-2 rounded-full transition-all duration-300 w-full font-space">
-                Join The Waitlist
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </nav>
-  );
-};
-
-export default function HeroSection() {
-  const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
   const fetchWaitlistCount = async () => {
     try {
       const count = await waitlistService.getWaitlistCount();
@@ -321,19 +64,19 @@ export default function HeroSection() {
     } catch (err) {
       console.error("Failed to fetch waitlist count:", err);
       setWaitlistCount(0);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchWaitlistCount();
-    const channel = supabase.channel("waitlist-realtime");
-    channel
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel("waitlist-realtime")
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "waitlist",
         },
@@ -344,44 +87,161 @@ export default function HeroSection() {
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, []);
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex flex-col items-center px-6 sm:px-8 md:px-12 overflow-hidden"
-    >
-      <div className="absolute inset-0 bg-gray-950"></div>
-      <GradientBars />
-      <Navbar />
+    <div className="bg-gray-950 relative w-full overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 z-0">
+        <div className="from-red-500/20 via-gray-950 to-gray-950 absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]"></div>
+        <div className="bg-red-500/5 absolute top-0 left-1/2 -z-10 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full blur-3xl"></div>
+      </div>
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-[size:16px_16px] opacity-15"></div>
 
-      <div className="relative z-10 text-center w-full max-w-4xl mx-auto flex flex-col items-center justify-center min-h-screen py-8 sm:py-16">
-        <div className="mb-6 sm:mb-8">
-          <TrustElements waitlistCount={waitlistCount} isLoading={isLoading} />
-        </div>
+      <div className="relative z-10 container mx-auto px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+        <div className="mx-auto max-w-5xl">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mx-auto mb-6 flex justify-center"
+          >
+            <div className="border-gray-700 bg-gray-900/80 inline-flex items-center rounded-full border px-3 py-2 text-xs sm:text-sm backdrop-blur-sm">
+              <span className="bg-red-500 mr-2 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
+                New
+              </span>
+              <span className="text-gray-400">
+                Join {waitlistCount.toLocaleString()}+ creators already waiting
+              </span>
+              <ChevronRight className="text-gray-400 ml-1 h-3 w-3 sm:h-4 sm:w-4" />
+            </div>
+          </motion.div>
 
-        <h1 className="w-full text-white leading-tight tracking-tight mb-6 sm:mb-8 animate-fadeIn px-4">
-          <span className="block font-inter font-medium text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-tight">
+          {/* Heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="from-red-500/10 via-white/85 to-white/50 bg-gradient-to-tl bg-clip-text text-center text-2xl tracking-tighter text-balance text-transparent sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl"
+          >
             Manage All Your Social Media,
-          </span>
-          <span className="block font-instrument italic text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl leading-tight">
-            From One Place.
-          </span>
-        </h1>
+            <br />
+            <span className="italic">From One Place.</span>
+          </motion.h1>
 
-        <div className="mb-6 sm:mb-10 px-4">
-          <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-400 leading-relaxed animate-fadeIn animation-delay-200 font-space">
-            Be the first to know when we launch. <br /> Join the waitlist and
-            get exclusive early access.
-          </p>
-        </div>
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-gray-400 mx-auto mt-6 max-w-2xl text-center text-sm sm:text-base md:text-lg"
+          >
+            Schedule posts, analyze performance, and grow your audience. The
+            all-in-one social media platform for creators.
+          </motion.p>
 
-        <div className="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mb-6 sm:mb-8 px-4">
-          <WaitlistForm />
+          {/* Email Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-10 flex justify-center"
+          >
+            {!isSubmitted ? (
+              <form
+                onSubmit={handleSubmit}
+                className="flex flex-col sm:flex-row gap-3 w-full max-w-lg"
+              >
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-4 h-12 rounded-full bg-gray-900/60 border border-gray-700 focus:border-red-500 outline-none text-white text-xs sm:text-sm backdrop-blur-sm transition-all duration-300"
+                  required
+                  disabled={isSubmitting}
+                />
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="group bg-red-500 text-white hover:shadow-red-500/30 relative overflow-hidden rounded-full px-6 h-12 shadow-lg transition-all duration-300 flex-shrink-0 text-xs sm:text-sm"
+                >
+                  <span className="relative z-10 flex items-center">
+                    {isSubmitting ? "Joining..." : "Join Waitlist"}
+                    {!isSubmitting && (
+                      <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    )}
+                  </span>
+                  <span className="from-red-500 via-red-500/90 to-red-500/80 absolute inset-0 z-0 bg-gradient-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
+                </Button>
+              </form>
+            ) : (
+              <div className="bg-green-500/20 border border-green-500/30 text-green-300 rounded-full px-6 py-3 text-center animate-fadeIn max-w-lg w-full">
+                Thanks! You're now on the waitlist. We'll notify you when we
+                launch.
+              </div>
+            )}
+
+            {message && (
+              <div
+                className={`mt-4 p-3 rounded-lg text-sm max-w-lg w-full ${
+                  message.type === "success"
+                    ? "bg-green-500/20 text-green-300 border border-green-500/30"
+                    : "bg-red-500/20 text-red-300 border border-red-500/30"
+                }`}
+              >
+                {message.text}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Feature Image */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.5,
+              type: "spring",
+              stiffness: 50,
+            }}
+            className="relative mx-auto mt-16 max-w-4xl"
+          >
+            <div className="border-gray-700/40 bg-gray-900/50 overflow-hidden rounded-xl border shadow-xl backdrop-blur-sm">
+              <div className="border-gray-700/40 bg-gray-800/50 flex h-10 items-center border-b px-4">
+                <div className="flex space-x-2">
+                  <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                </div>
+                <div className="bg-gray-900/50 text-gray-400 mx-auto flex items-center rounded-md px-3 py-1 text-xs">
+                  socinize.com/dashboard
+                </div>
+              </div>
+              <div className="relative">
+                <img
+                  src="https://i.postimg.cc/0yk8Vz7t/dashboard.webp"
+                  alt="Socinize Dashboard Preview"
+                  className="w-full"
+                />
+                <div className="from-gray-950 absolute inset-0 bg-gradient-to-t to-transparent opacity-0"></div>
+              </div>
+            </div>
+
+            {/* Floating elements for visual interest */}
+            <div className="border-gray-700/40 bg-gray-900/80 absolute -top-6 -right-6 h-12 w-12 rounded-lg border p-3 shadow-lg backdrop-blur-md">
+              <div className="bg-red-500/20 h-full w-full rounded-md"></div>
+            </div>
+            <div className="border-gray-700/40 bg-gray-900/80 absolute -bottom-4 -left-4 h-8 w-8 rounded-full border shadow-lg backdrop-blur-md"></div>
+            <div className="border-gray-700/40 bg-gray-900/80 absolute right-12 -bottom-6 h-10 w-10 rounded-lg border p-2 shadow-lg backdrop-blur-md">
+              <div className="h-full w-full rounded-md bg-green-500/20"></div>
+            </div>
+          </motion.div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
