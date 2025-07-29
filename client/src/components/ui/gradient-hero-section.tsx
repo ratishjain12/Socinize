@@ -179,7 +179,7 @@ export default function HeroSection() {
                 </Button>
               </form>
             ) : (
-              <div className="bg-green-500/20 border border-green-500/30 text-green-300 rounded-full px-6 py-3 text-center animate-fadeIn max-w-lg w-full">
+              <div className="bg-green-500/20 border border-green-500/30 text-green-300 rounded-full px-6 py-3 text-center animate-fadeIn max-w-xl w-full">
                 Thanks! You're now on the waitlist. We'll notify you when we
                 launch.
               </div>
