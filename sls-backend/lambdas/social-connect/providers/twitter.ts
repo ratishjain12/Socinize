@@ -42,12 +42,14 @@ export class TwitterProvider implements SocialMediaProvider {
       return createResponse(400, { error: "User ID not found" });
     }
 
+    const accountId = `${userId}_${this.config.socialName.toLowerCase()}`;
+
     await putSocialAccount({
-      account_id: userId,
+      account_id: accountId,
       user_id: userId,
       code_verifier: codeVerifier,
       state,
-      social_name: this.config.socialName,
+      social_name: this.config.socialName.toLowerCase(),
       created_at: new Date().toISOString(),
     });
 
@@ -81,7 +83,8 @@ export class TwitterProvider implements SocialMediaProvider {
     if (!sessionId)
       return createResponse(400, { error: "Invalid state parameter" });
 
-    const sessionData = await getSocialAccountByAccountId(userId);
+    const accountId = `${userId}_${this.config.socialName.toLowerCase()}`;
+    const sessionData = await getSocialAccountByAccountId(accountId);
     if (!sessionData)
       return createResponse(400, { error: "Session expired or invalid" });
     if (originalState !== sessionData.state)
@@ -118,15 +121,17 @@ export class TwitterProvider implements SocialMediaProvider {
 
       const response = { data: await fetchResponse.json() };
 
+      const accountId = `${validatedUserId}_${this.config.socialName.toLowerCase()}`;
+
       await putSocialAccount({
-        account_id: userId,
+        account_id: accountId,
         user_id: validatedUserId,
         code: code,
         state: sessionData.state,
         code_verifier: codeVerifier,
         access_token: response.data.access_token,
         refresh_token: response.data.refresh_token,
-        social_name: this.config.socialName,
+        social_name: this.config.socialName.toLowerCase(),
         created_at: sessionData.created_at,
         updated_at: new Date().toISOString(),
       });
@@ -153,7 +158,8 @@ export class TwitterProvider implements SocialMediaProvider {
       return createResponse(400, { error: "User ID not found" });
     }
 
-    const sessionData = await getSocialAccountByAccountId(userId);
+    const accountId = `${userId}_${this.config.socialName.toLowerCase()}`;
+    const sessionData = await getSocialAccountByAccountId(accountId);
     if (!sessionData || !sessionData.refresh_token) {
       return createResponse(401, { error: "No refresh token found" });
     }
@@ -180,14 +186,16 @@ export class TwitterProvider implements SocialMediaProvider {
 
       const response = { data: await fetchResponse.json() };
 
+      const accountId = `${userId}_${this.config.socialName.toLowerCase()}`;
+
       await putSocialAccount({
-        account_id: userId,
+        account_id: accountId,
         user_id: sessionData.user_id,
         code_verifier: sessionData.code_verifier,
         state: sessionData.state,
         access_token: response.data.access_token,
         refresh_token: response.data.refresh_token || sessionData.refresh_token,
-        social_name: this.config.socialName,
+        social_name: this.config.socialName.toLowerCase(),
         created_at: sessionData.created_at,
         updated_at: new Date().toISOString(),
       });
@@ -219,7 +227,8 @@ export class TwitterProvider implements SocialMediaProvider {
       return createResponse(400, { error: "User ID not found" });
     }
 
-    const sessionData = await getSocialAccountByAccountId(userId);
+    const accountId = `${userId}_${this.config.socialName.toLowerCase()}`;
+    const sessionData = await getSocialAccountByAccountId(accountId);
     if (!sessionData || !sessionData.access_token) {
       return createResponse(401, { error: "No access token found" });
     }
