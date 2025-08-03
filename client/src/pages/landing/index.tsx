@@ -1,7 +1,7 @@
 import FeaturesSection from "@/components/ui/features-section";
-import HeroSection from "../components/ui/gradient-hero-section";
 import FaqSection from "@/components/ui/faq";
 import FooterGlow from "@/components/ui/footer";
+import HeroSection from "@/components/ui/gradient-hero-section";
 
 const Landing = () => {
   return (
